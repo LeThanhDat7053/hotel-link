@@ -60,10 +60,8 @@ export const roomService = {
    * @returns RoomUIData
    */
   transformRoomForUI(room: RoomResponse, locale: string): RoomUIData {
-    // Lấy translation theo locale, fallback về locale khác nếu không có
-    const translation = room.translations[locale] 
-      || room.translations['vi'] 
-      || room.translations[Object.keys(room.translations)[0]];
+    // Lấy translation theo locale, không fallback
+    const translation = room.translations[locale];
 
     // Lấy ảnh đại diện (is_primary = true)
     const primaryMedia = room.media.find(m => m.is_primary && !m.is_vr360);
@@ -80,11 +78,24 @@ export const roomService = {
     // Lấy VR link từ top level (room.vr_link), KHÔNG lấy từ attributes_json
     const vrLink = room.vr_link || null;
 
+    // Lấy amenities từ translation.amenities_text (ưu tiên) hoặc amenities_json (fallback)
+    let amenities: string[] = [];
+    if (translation?.amenities_text) {
+      // Parse amenities_text thành array (format: "Item1, Item2, Item3")
+      amenities = translation.amenities_text
+        .split(',')
+        .map(item => item.trim())
+        .filter(item => item !== '');
+    } else if (room.amenities_json && room.amenities_json.length > 0) {
+      // Fallback về amenities_json nếu không có amenities_text
+      amenities = room.amenities_json;
+    }
+
     return {
       id: room.id,
       code: room.room_code,
       type: room.room_type,
-      name: translation?.name || `Room ${room.room_code}`,
+      name: translation?.name || '',
       description: translation?.description || '',
       price: room.price_per_night,
       capacity: room.capacity,
@@ -92,7 +103,7 @@ export const roomService = {
       floor: room.floor,
       bedType: room.bed_type,
       status: room.status,
-      amenities: room.amenities_json || [],
+      amenities,
       vrLink,
       primaryImage,
       galleryImages,
@@ -104,6 +115,7 @@ export const roomService = {
 
   /**
    * Lấy danh sách phòng và transform cho UI
+   * Chỉ trả về rooms có translation cho locale hiện tại
    * 
    * @param propertyId - ID của property
    * @param locale - Mã ngôn ngữ
@@ -121,6 +133,7 @@ export const roomService = {
     const rooms = await this.getRooms(propertyId, params);
     return rooms
       .map(room => this.transformRoomForUI(room, locale))
+      .filter(room => room.name.trim() !== '') // Chỉ giữ rooms có translation
       .sort((a, b) => a.displayOrder - b.displayOrder);
   },
 

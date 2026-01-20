@@ -2,6 +2,8 @@ import type { FC, CSSProperties } from 'react';
 import { memo } from 'react';
 import { Spin, Alert } from 'antd';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { getMenuTranslations } from '../../constants/translations';
 import type { ContactUIData } from '../../types/contact';
 
 interface ContactContentProps {
@@ -18,6 +20,8 @@ export const ContactContent: FC<ContactContentProps> = memo(({
   error = null
 }) => {
   const { primaryColor } = useTheme();
+  const { locale } = useLanguage();
+  const t = getMenuTranslations(locale);
 
   // Container styles
   const containerStyle: CSSProperties = {
@@ -80,47 +84,38 @@ export const ContactContent: FC<ContactContentProps> = memo(({
     );
   }
 
-  // No content
+  // No content - để trống khi không có dữ liệu
   if (!content) {
-    return (
-      <div className={`contact-content ${className}`} style={{ padding: '20px' }}>
-        <Alert
-          title="Thông báo"
-          message="Chưa có thông tin liên hệ"
-          type="info"
-          showIcon
-        />
-      </div>
-    );
+    return null;
   }
 
   return (
     <div className={`contact-content contact-page ${className}`} style={containerStyle}>
       {/* Thẻ 1: Contact Info */}
       <p className="contact-info-bg" style={contactInfoStyle}>
-        <span style={strongStyle}>Địa chỉ:</span> {content.address || 'Chưa cập nhật'}
+        <span style={strongStyle}>{t.address}:</span> {content.address || t.notAvailable}
         <br />
-        <span style={strongStyle}>Email:</span>{' '}
+        <span style={strongStyle}>{t.email}:</span>{' '}
         {content.email ? (
           <a href={`mailto:${content.email}`} style={linkStyle}>
             {content.email}
           </a>
         ) : (
-          'Chưa cập nhật'
+          t.notAvailable
         )}
         <br />
-        <span style={strongStyle}>Điện thoại:</span>{' '}
+        <span style={strongStyle}>{t.phone}:</span>{' '}
         {content.phone ? (
           <a href={`tel:${content.phone}`} style={linkStyle}>
             {content.phone}
           </a>
         ) : (
-          'Chưa cập nhật'
+          t.notAvailable
         )}
         {content.website && (
           <>
             <br />
-            <span style={strongStyle}>Website:</span>{' '}
+            <span style={strongStyle}>{t.website}:</span>{' '}
             <a href={content.website} target="_blank" rel="noopener noreferrer" style={linkStyle}>
               {content.website}
             </a>
@@ -129,15 +124,17 @@ export const ContactContent: FC<ContactContentProps> = memo(({
         {content.workingHours && (
           <>
             <br />
-            <span style={strongStyle}>Giờ làm việc:</span> {content.workingHours}
+            <span style={strongStyle}>{t.workingHours}:</span> {content.workingHours}
           </>
         )}
       </p>
 
-      {/* Thẻ 2: Contact Message */}
-      <p className="contact-mes" style={contactMesStyle}>
-        {content.description || 'Nếu bạn có câu hỏi hoặc ý kiến gì, xin vui lòng liên hệ với chúng tôi. Chúng tôi sẽ trả lời bạn trong thời gian sớm nhất có thể.'}
-      </p>
+      {/* Thẻ 2: Contact Message - chỉ hiển thị nếu có description từ API */}
+      {content.description && (
+        <p className="contact-mes" style={contactMesStyle}>
+          {content.description}
+        </p>
+      )}
     </div>
   );
 });

@@ -24,6 +24,7 @@ export interface DiningResponse {
   code: string;
   dining_type: string;
   vr_link: string | null;
+  operating_hours: string | null;
   status: string;
   display_order: number;
   translations: Record<string, DiningTranslations>;
@@ -43,6 +44,9 @@ export interface DiningUIData {
   // Localized fields
   name: string;
   description: string;
+  
+  // Operating hours
+  operatingHours: string | null;
   
   // Media
   primaryImage: string | null; // URL from media service

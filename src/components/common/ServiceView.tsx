@@ -7,6 +7,7 @@ import { useServiceDetail } from '../../hooks/useService';
 import { useProperty } from '../../context/PropertyContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { extractCleanPath, getLocalizedPath } from '../../constants/routes';
+import { getMenuTranslations } from '../../constants/translations';
 import type { ServiceUIData } from '../../types/service';
 
 interface ServiceViewProps {
@@ -48,7 +49,8 @@ export const ServiceView: FC<ServiceViewProps> = memo(({
     const cleanPath = '/dich-vu';
     const newPath = getLocalizedPath(cleanPath, locale);
     navigate(newPath, { replace: true });
-    onTitleChange?.('Dịch Vụ');
+    const t = getMenuTranslations(locale);
+    onTitleChange?.(t.services);
     onVrLinkChange?.(null);
   }, [onTitleChange, onVrLinkChange, navigate, locale]);
 
@@ -58,6 +60,14 @@ export const ServiceView: FC<ServiceViewProps> = memo(({
       onTitleChange?.(service.name);
     }
   }, [service, selectedServiceId, onTitleChange]);
+
+  // Set title to list page title when not viewing detail
+  useEffect(() => {
+    if (selectedServiceId === null) {
+      const t = getMenuTranslations(locale);
+      onTitleChange?.(t.services);
+    }
+  }, [selectedServiceId, locale, onTitleChange]);
 
   // Sync URL code with selectedServiceId
   useEffect(() => {

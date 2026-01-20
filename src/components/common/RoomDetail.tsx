@@ -1,7 +1,6 @@
 import type { FC, CSSProperties } from 'react';
 import { memo, useState, useCallback, useEffect } from 'react';
 import { Typography, Button, Grid, Spin, Alert } from 'antd';
-import { useNavigate } from 'react-router-dom';
 import { 
   HomeOutlined, 
   ExpandOutlined, 
@@ -11,6 +10,10 @@ import {
   DollarOutlined,
 } from '@ant-design/icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { getMenuTranslations } from '../../constants/translations';
+import { usePropertyData } from '../../context/PropertyContext';
+import { useVrHotelSettings } from '../../hooks/useVR360';
 import { ImageGalleryViewer } from './ImageGalleryViewer';
 import type { RoomUIData } from '../../types/room';
 
@@ -36,8 +39,11 @@ export const RoomDetail: FC<RoomDetailProps> = memo(({
   className = '',
 }) => {
   const screens = useBreakpoint();
-  const navigate = useNavigate();
   const { primaryColor } = useTheme();
+  const { locale } = useLanguage();
+  const t = getMenuTranslations(locale);
+  const { propertyId } = usePropertyData();
+  const { settings } = useVrHotelSettings(propertyId);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
 
@@ -63,12 +69,11 @@ export const RoomDetail: FC<RoomDetailProps> = memo(({
     setGalleryOpen(false);
   }, []);
 
-  // Chuyển đến trang đặt phòng với loại phòng được chọn
+  // Chuyển đến trang đặt phòng - redirect to external booking URL in new tab
   const handleBooking = useCallback(() => {
-    if (!room) return;
-    const roomSlug = room.name.toLowerCase().replace(/\s+/g, '-');
-    navigate(`/dat-phong?room=${roomSlug}`);
-  }, [navigate, room]);
+    if (!settings?.booking_url) return;
+    window.open(settings.booking_url, '_blank', 'noopener,noreferrer');
+  }, [settings?.booking_url]);
 
   // Đổi VR360 background khi vào chi tiết phòng
   useEffect(() => {
@@ -191,13 +196,13 @@ export const RoomDetail: FC<RoomDetailProps> = memo(({
               fontSize: screens.md ? 13 : 11,
             }}
           >
-            Quay lại
+            {t.back}
           </Button>
         )}
         <Alert
           type="error"
-          title="Lỗi tải dữ liệu"
-          message={error.message || 'Không thể tải thông tin phòng. Vui lòng thử lại sau.'}
+          title={t.errorLoading}
+          message={error.message || t.errorLoading}
         />
       </div>
     );
@@ -223,8 +228,8 @@ export const RoomDetail: FC<RoomDetailProps> = memo(({
         )}
         <Alert
           type="warning"
-          title="Không tìm thấy phòng"
-          message="Thông tin phòng không tồn tại hoặc đã bị xóa."
+          title={t.notFound}
+          message={t.notFound}
         />
       </div>
     );
@@ -250,7 +255,7 @@ export const RoomDetail: FC<RoomDetailProps> = memo(({
             fontSize: screens.md ? 13 : 11,
           }}
         >
-          Quay lại
+          {t.back}
         </Button>
       )}
 
@@ -265,7 +270,7 @@ export const RoomDetail: FC<RoomDetailProps> = memo(({
         {room.price > 0 && (
           <div style={priceContainerStyle}>
             <Text style={priceTextStyle}>
-              Giá phòng: <strong>{formattedPrice}</strong>/đêm
+              {t.pricePerNight}: <strong>{formattedPrice}</strong>/{t.night}
             </Text>
             <Button 
               type="primary"
@@ -279,7 +284,7 @@ export const RoomDetail: FC<RoomDetailProps> = memo(({
                 fontSize: screens.md ? 12 : 10,
               }}
             >
-              Đặt ngay
+              {t.bookNow}
             </Button>
           </div>
         )}
@@ -289,25 +294,25 @@ export const RoomDetail: FC<RoomDetailProps> = memo(({
           {room.capacity > 0 && (
             <div style={roomInfoStyle}>
               {getIcon('capacity')}
-              <span>Sức chứa: <strong>{room.capacity} người</strong></span>
+              <span>{t.capacity}: <strong>{room.capacity} {t.people}</strong></span>
             </div>
           )}
           {room.size > 0 && (
             <div style={roomInfoStyle}>
               {getIcon('area')}
-              <span>Diện tích: <strong>{room.size}m²</strong></span>
+              <span>{t.area}: <strong>{room.size}m²</strong></span>
             </div>
           )}
           {room.floor !== null && (
             <div style={roomInfoStyle}>
               {getIcon('floor')}
-              <span>Tầng: <strong>{room.floor}</strong></span>
+              <span>{t.floor}: <strong>{room.floor}</strong></span>
             </div>
           )}
           {room.bedType && (
             <div style={roomInfoStyle}>
               {getIcon('bed')}
-              <span>Loại giường: <strong>{room.bedType}</strong></span>
+              <span>{t.bedType}: <strong>{room.bedType}</strong></span>
             </div>
           )}
         </div>
@@ -315,7 +320,7 @@ export const RoomDetail: FC<RoomDetailProps> = memo(({
         {/* Amenities */}
         {room.amenities.length > 0 && (
           <>
-            <div style={sectionTitleStyle}>Tiện nghi phòng</div>
+            <div style={sectionTitleStyle}>{t.amenities}</div>
             <ul style={amenitiesListStyle}>
               {room.amenities.map((amenity, index) => (
                 <li key={index} style={amenityItemStyle}>
@@ -334,7 +339,7 @@ export const RoomDetail: FC<RoomDetailProps> = memo(({
         {/* Gallery - Ảnh chi tiết (is_primary=false) */}
         {room.galleryImages.length > 0 && (
           <>
-            <div style={sectionTitleStyle}>Hình ảnh</div>
+            <div style={sectionTitleStyle}>{t.images}</div>
             <div style={galleryContainerStyle}>
               {room.galleryImages.map((img, index) => (
                 <div

@@ -12,8 +12,8 @@ export function transformPolicyForUI(
   policy: PolicyResponse,
   locale: string
 ): PolicyUIData {
-  // Lấy content theo locale, fallback về 'vi' nếu không có
-  const content = policy.content[locale] || policy.content['vi'] || policy.content[Object.keys(policy.content)[0]];
+  // Lấy content theo locale, không fallback
+  const content = policy.content[locale];
   
   return {
     title: content?.title || '',

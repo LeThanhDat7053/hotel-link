@@ -122,17 +122,9 @@ export const DiningList: FC<DiningListProps> = memo(({
     );
   }
 
-  // Empty state
+  // Empty state - để trống khi không có dữ liệu
   if (dinings.length === 0) {
-    return (
-      <div className={`dining-list ${className}`}>
-        <Alert
-          type="info"
-          title="Không có dữ liệu"
-          message="Chưa có thông tin ẩm thực nào."
-        />
-      </div>
-    );
+    return null;
   }
 
   return (

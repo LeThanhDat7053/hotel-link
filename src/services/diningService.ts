@@ -13,8 +13,8 @@ export function transformDiningForUI(
   dining: DiningResponse,
   locale: string
 ): DiningUIData {
-  // Lấy translation theo locale, fallback về 'vi' nếu không có
-  const translation = dining.translations[locale] || dining.translations['vi'] || dining.translations[Object.keys(dining.translations)[0]];
+  // Lấy translation theo locale, không fallback
+  const translation = dining.translations[locale];
   
   // Lấy primary image (is_primary: true)
   const primaryMedia = dining.media.find(m => m.is_primary);
@@ -38,8 +38,11 @@ export function transformDiningForUI(
     status: dining.status,
     
     // Localized
-    name: translation?.name || 'Unnamed Dining',
+    name: translation?.name || '',
     description: translation?.description || '',
+    
+    // Operating hours
+    operatingHours: dining.operating_hours,
     
     // Media
     primaryImage,
@@ -78,6 +81,7 @@ export async function getDinings(
 
 /**
  * Lấy dining với UI data đã transform (sorted by display_order)
+ * Chỉ trả về dining có translation cho locale hiện tại
  */
 export function getDiningsForUI(
   propertyId: number,
@@ -88,8 +92,11 @@ export function getDiningsForUI(
     // Transform từng dining thành UI data
     const uiData = dinings.map(dining => transformDiningForUI(dining, locale));
     
+    // Filter: Chỉ giữ lại items có translation cho locale (name không rỗng)
+    const filtered = uiData.filter(item => item.name.trim() !== '');
+    
     // Sort theo display_order
-    return uiData.sort((a, b) => a.display_order - b.display_order);
+    return filtered.sort((a, b) => a.display_order - b.display_order);
   });
 }
 

@@ -23,7 +23,8 @@ export interface ServiceResponse {
   property_id: number;
   code: string;
   service_type: string;
-  pricing_info: string | null;
+  availability: string | null;
+  price_info: string | null;
   vr_link: string | null;
   status: string;
   display_order: number;
@@ -39,12 +40,15 @@ export interface ServiceUIData {
   id: number;
   code: string;
   service_type: string;
-  pricing_info: string | null;
   status: string;
   
   // Localized fields
   name: string;
   description: string;
+  
+  // Service info
+  availability: string | null;
+  priceInfo: string | null;
   
   // Media
   primaryImage: string | null; // URL from media service

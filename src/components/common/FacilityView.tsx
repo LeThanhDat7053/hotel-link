@@ -7,6 +7,7 @@ import { useFacilityDetail } from '../../hooks/useFacility';
 import { useProperty } from '../../context/PropertyContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { extractCleanPath, getLocalizedPath } from '../../constants/routes';
+import { getMenuTranslations } from '../../constants/translations';
 import type { FacilityUIData } from '../../types/facility';
 
 interface FacilityViewProps {
@@ -49,7 +50,8 @@ export const FacilityView: FC<FacilityViewProps> = memo(({
     const cleanPath = '/tien-ich';
     const newPath = getLocalizedPath(cleanPath, locale);
     navigate(newPath, { replace: true });
-    onTitleChange?.('Tiện Ích');
+    const t = getMenuTranslations(locale);
+    onTitleChange?.(t.facilities);
     onVrLinkChange?.(null);
   }, [onTitleChange, onVrLinkChange, navigate, locale]);
 
@@ -59,6 +61,14 @@ export const FacilityView: FC<FacilityViewProps> = memo(({
       onTitleChange?.(facility.name);
     }
   }, [facility, selectedFacilityId, onTitleChange]);
+
+  // Set title to list page title when not viewing detail
+  useEffect(() => {
+    if (!selectedFacilityId) {
+      const t = getMenuTranslations(locale);
+      onTitleChange?.(t.facilities);
+    }
+  }, [selectedFacilityId, locale, onTitleChange]);
 
   // Sync URL code with selectedFacilityId
   useEffect(() => {

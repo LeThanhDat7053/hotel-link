@@ -46,16 +46,22 @@ export const PolicyContent: FC<PolicyContentProps> = memo(({ className = '' }) =
     );
   }
 
-  if (error || !content) {
+  // Lỗi API
+  if (error) {
     return (
       <Alert
         title="Lỗi"
-        message={error?.message || "Không thể tải thông tin chính sách"}
+        message={error.message || "Không thể tải thông tin chính sách"}
         type="error"
         showIcon
         style={{ margin: '16px 0' }}
       />
     );
+  }
+
+  // Không có dữ liệu - để trống
+  if (!content) {
+    return null;
   }
 
   // Tách detailedContent thành các đoạn

@@ -12,8 +12,8 @@ export function transformRegulationForUI(
   regulation: RegulationResponse,
   locale: string
 ): RegulationUIData {
-  // Lấy content theo locale, fallback về 'vi' nếu không có
-  const content = regulation.content[locale] || regulation.content['vi'] || regulation.content[Object.keys(regulation.content)[0]];
+  // Lấy content theo locale, không fallback
+  const content = regulation.content[locale];
   
   return {
     title: content?.title || '',

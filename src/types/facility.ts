@@ -39,7 +39,7 @@ export interface FacilityUIData {
   id: number;
   code: string;
   facility_type: string;
-  operating_hours: string | null;
+  operatingHours: string | null;
   status: string;
   
   // Localized fields

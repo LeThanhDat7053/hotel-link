@@ -47,10 +47,8 @@ export function transformOfferForUI(
   offer: OfferResponse,
   locale: string
 ): OfferUIData {
-  // Lấy translation theo locale, fallback về 'vi' nếu không có
-  const translation = offer.translations[locale] 
-    || offer.translations['vi'] 
-    || offer.translations[Object.keys(offer.translations)[0]];
+  // Lấy translation theo locale, không fallback
+  const translation = offer.translations[locale];
 
   return {
     id: offer.id,
@@ -73,7 +71,7 @@ export function transformOfferForUI(
     applicableRoomTypes: offer.applicable_room_types,
     
     // Localized
-    title: translation?.title || 'Unnamed Offer',
+    title: translation?.title || '',
     description: translation?.description || '',
     termsConditions: translation?.terms_conditions || '',
     
@@ -110,7 +108,7 @@ export async function getOffers(
 
 /**
  * Lấy offers với UI data đã transform (sorted by display_order)
- * Chỉ trả về offers có status = 'active' và chưa hết hạn
+ * Chỉ trả về offers có status = 'active', chưa hết hạn, và có translation cho locale
  */
 export async function getOffersForUI(
   propertyId: number,
@@ -121,7 +119,7 @@ export async function getOffersForUI(
   
   return offers
     .map(offer => transformOfferForUI(offer, locale))
-    .filter(offer => !offer.isExpired) // Filter out expired offers
+    .filter(offer => !offer.isExpired && offer.title.trim() !== '') // Filter expired + no translation
     .sort((a, b) => a.displayOrder - b.displayOrder);
 }
 

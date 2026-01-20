@@ -12,10 +12,10 @@ export function transformContactForUI(
   contact: ContactResponse,
   locale: string
 ): ContactUIData {
-  // Lấy data theo locale, fallback về 'vi' nếu không có
-  const address = contact.address[locale] || contact.address['vi'] || '';
-  const workingHours = contact.workingHours[locale] || contact.workingHours['vi'] || '';
-  const contentByLocale = contact.content[locale] || contact.content['vi'] || contact.content[Object.keys(contact.content)[0]];
+  // Lấy data theo locale, không fallback
+  const address = contact.address[locale] || '';
+  const workingHours = contact.workingHours[locale] || '';
+  const contentByLocale = contact.content[locale];
   
   return {
     phone: contact.phone || '',

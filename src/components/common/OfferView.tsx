@@ -7,22 +7,8 @@ import { useOfferDetail } from '../../hooks/useOffers';
 import { useProperty } from '../../context/PropertyContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { getLocalizedPath } from '../../constants/routes';
+import { getMenuTranslations } from '../../constants/translations';
 import type { OfferUIData } from '../../types/offer';
-
-// Translations cho menu title
-const VIEW_TRANSLATIONS: Record<string, { offers: string }> = {
-  vi: { offers: 'Ưu Đãi' },
-  en: { offers: 'Offers' },
-  zh: { offers: '优惠' },
-  ja: { offers: 'オファー' },
-  ko: { offers: '혜택' },
-  th: { offers: 'ข้อเสนอ' },
-  default: { offers: 'Offers' },
-};
-
-const getViewTranslations = (locale: string) => {
-  return VIEW_TRANSLATIONS[locale] || VIEW_TRANSLATIONS['default'];
-};
 
 interface OfferViewProps {
   className?: string;
@@ -40,7 +26,7 @@ export const OfferView: FC<OfferViewProps> = memo(({
   const navigate = useNavigate();
   const { propertyId } = useProperty();
   const { locale } = useLanguage();
-  const t = getViewTranslations(locale);
+  const t = getMenuTranslations(locale);
 
   // Fetch offer detail when selected
   const { offer, loading, error } = useOfferDetail({
@@ -71,6 +57,13 @@ export const OfferView: FC<OfferViewProps> = memo(({
       onTitleChange?.(offer.title);
     }
   }, [offer, selectedOfferCode, code, onTitleChange]);
+
+  // Set title to list page title when not viewing detail
+  useEffect(() => {
+    if (!selectedOfferCode && !code) {
+      onTitleChange?.(t.offers);
+    }
+  }, [selectedOfferCode, code, locale, onTitleChange, t.offers]);
 
   // Sync URL code with selectedOfferCode
   useEffect(() => {

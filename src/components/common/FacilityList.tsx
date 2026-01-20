@@ -119,16 +119,9 @@ export const FacilityList: FC<FacilityListProps> = memo(({
     );
   }
 
+  // Empty state - để trống khi không có dữ liệu
   if (facilities.length === 0) {
-    return (
-      <Alert
-        title="Không có dữ liệu"
-        message="Chưa có tiện ích nào."
-        type="info"
-        showIcon
-        style={{ margin: '16px 0' }}
-      />
-    );
+    return null;
   }
 
   return (

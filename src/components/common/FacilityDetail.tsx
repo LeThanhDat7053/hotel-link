@@ -3,6 +3,8 @@ import { memo, useState, useEffect } from 'react';
 import { Button, Grid, Spin, Alert, Image } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { getMenuTranslations } from '../../constants/translations';
 import { ImageGalleryViewer } from './ImageGalleryViewer';
 import type { FacilityUIData } from '../../types/facility';
 
@@ -27,6 +29,8 @@ export const FacilityDetail: FC<FacilityDetailProps> = memo(({
 }) => {
   const screens = useBreakpoint();
   const { primaryColor } = useTheme();
+  const { locale } = useLanguage();
+  const t = getMenuTranslations(locale);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
 
@@ -124,11 +128,11 @@ export const FacilityDetail: FC<FacilityDetailProps> = memo(({
           onClick={onBack}
           style={backButtonStyle}
         >
-          Quay lại
+          {t.back}
         </Button>
         <Alert
           type="error"
-          title="Lỗi tải dữ liệu"
+          title={t.errorLoading}
           message={error.message || 'Không thể tải thông tin tiện ích. Vui lòng thử lại sau.'}
         />
       </div>
@@ -145,11 +149,11 @@ export const FacilityDetail: FC<FacilityDetailProps> = memo(({
           onClick={onBack}
           style={backButtonStyle}
         >
-          Quay lại
+          {t.back}
         </Button>
         <Alert
           type="info"
-          title="Không tìm thấy"
+          title={t.notFound}
           message="Thông tin tiện ích không tồn tại."
         />
       </div>
@@ -169,11 +173,23 @@ export const FacilityDetail: FC<FacilityDetailProps> = memo(({
         style={backButtonStyle}
         className="facility-back-btn"
       >
-        Quay lại
+        {t.back}
       </Button>
 
       {/* Nội dung chi tiết - chỉ là thẻ <p> đơn giản */}
       <div className="page-content">
+        {/* Operating Hours - từ API */}
+        {facility.operatingHours && (
+          <p style={{ 
+            color: primaryColor, 
+            fontSize: screens.md ? 13 : 11, 
+            marginBottom: 8,
+            fontWeight: 500,
+          }}>
+            {t.operatingHours}: <strong>{facility.operatingHours}</strong>
+          </p>
+        )}
+
         {paragraphs.map((paragraph, index) => (
           <p 
             key={index} 
@@ -186,7 +202,7 @@ export const FacilityDetail: FC<FacilityDetailProps> = memo(({
         {/* Gallery Images nếu có */}
         {facility.galleryImages && facility.galleryImages.length > 0 && (
           <div style={{ marginTop: 16 }}>
-            <h4 style={{ color: primaryColor, fontSize: screens.md ? 15 : 13, marginBottom: 8 }}>Hình ảnh</h4>
+            <h4 style={{ color: primaryColor, fontSize: screens.md ? 15 : 13, marginBottom: 8 }}>{t.images}</h4>
             <div style={galleryContainerStyle}>
               {facility.galleryImages.map((img, idx) => (
                 <div

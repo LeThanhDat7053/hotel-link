@@ -3,7 +3,7 @@ import { useState, useCallback, useMemo, lazy, Suspense, useEffect } from 'react
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Layout, Grid, Skeleton } from 'antd';
 import { ROUTES, extractCleanPath } from './constants/routes';
-import { Header, InfoBox, BottomBar, RoomsView, DiningView, FacilityView, ServiceView, PolicyContent, ContactContent, BookingForm, GalleryContent, RegulationContent, AboutContent, PropertyPostsContent, SEOMeta } from './components/common';
+import { Header, InfoBox, BottomBar, RoomsView, DiningView, FacilityView, ServiceView, PolicyContent, ContactContent, GalleryContent, RegulationContent, AboutContent, PropertyPostsContent, SEOMeta } from './components/common';
 import { OfferView } from './components/common/OfferView';
 import { PropertyProvider, usePropertyData, LanguageProvider, usePropertyContext, ThemeProvider } from './context';
 import { ThemeInjector } from './components/ThemeInjector';
@@ -11,6 +11,7 @@ import { useIntroductionContent, usePropertyPosts, usePolicy, useRegulation, use
 import { useVrHotelSettings } from './hooks/useVR360';
 import { useLocale } from './context/LanguageContext';
 import { getMediaType } from './utils/mediaHelper';
+import { getMenuTranslations } from './constants/translations';
 
 // Lazy load pages để tối ưu performance
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -20,22 +21,6 @@ const RoomsPage = lazy(() => import('./pages/RoomsPage'));
 
 const { Content } = Layout;
 const { useBreakpoint } = Grid;
-
-// Page titles for different routes
-const PAGE_TITLES: Record<string, string> = {
-  '/': '',
-  '/gioi-thieu': 'Giới Thiệu',
-  '/phong-nghi': 'Phòng Nghỉ',
-  '/dat-phong': 'Đặt Phòng',
-  '/am-thuc': 'Ẩm Thực',
-  '/tien-ich': 'Tiện Ích',
-  '/dich-vu': 'Dịch Vụ',
-  '/chinh-sach': 'Chính Sách',
-  '/lien-he': 'Liên Hệ',
-  '/thu-vien-anh': 'Thư Viện Ảnh',
-  '/noi-quy-khach-san': 'Nội Quy Khách Sạn',
-  '/uu-dai': 'Ưu Đãi',
-};
 
 // Layout wrapper component
 const AppLayout: FC = () => {
@@ -60,6 +45,9 @@ const AppLayout: FC = () => {
   const { vr360Url: defaultVr360Url, propertyName, loading, propertyId } = usePropertyData();
   const locale = useLocale();
   
+  // Get translations for current locale
+  const t = getMenuTranslations(locale);
+  
   // Extract clean path from location (remove language prefix)
   const getCleanPath = useMemo(() => {
     return extractCleanPath(location.pathname);
@@ -74,8 +62,8 @@ const AppLayout: FC = () => {
   // Fetch VR hotel settings cho trang phòng nghỉ
   const { settings: vrHotelSettings } = useVrHotelSettings(propertyId);
   
-  // Fetch policy data cho trang chính sách
-  const { content: policyContent, vr360Link: policyVr360Link } = usePolicy(propertyId || 0, locale);
+  // Fetch policy VR360 link cho trang chính sách
+  const { vr360Link: policyVr360Link } = usePolicy(propertyId || 0, locale);
   
   // Fetch regulation data cho trang nội quy
   const { content: regulationContent, vr360Link: regulationVr360Link, loading: regulationLoading, error: regulationError } = useRegulation(propertyId || 0, locale);
@@ -103,6 +91,15 @@ const AppLayout: FC = () => {
   const isRegulationPage = getCleanPath === '/noi-quy-khach-san';
   const isOffersPage = getCleanPath === '/uu-dai' || getCleanPath.startsWith('/uu-dai/');
   
+  // Redirect to external booking URL if on booking page
+  useEffect(() => {
+    if (isBookingPage && vrHotelSettings?.booking_url) {
+      window.open(vrHotelSettings.booking_url, '_blank', 'noopener,noreferrer');
+      // Navigate back to previous page or home
+      window.history.back();
+    }
+  }, [isBookingPage, vrHotelSettings?.booking_url]);
+  
   // Lấy title cho page hiện tại
   const getPageTitle = () => {
     // Trang chủ: lấy title từ post đầu tiên theo locale
@@ -111,22 +108,34 @@ const AppLayout: FC = () => {
     }
     // Trang giới thiệu: lấy title từ introduction API theo locale
     if (isAboutPage) {
-      return introContent?.title || PAGE_TITLES[getCleanPath] || '';
+      return introContent?.title || t.about;
     }
-    // Trang chính sách: lấy title từ policy API theo locale
+    // Trang chính sách: dùng translation từ header/footer
     if (isPolicyPage) {
-      return policyContent?.title || PAGE_TITLES[getCleanPath] || '';
+      return t.policy;
     }
-    // Trang nội quy: lấy title từ regulation API theo locale
+    // Trang nội quy: dùng translation từ header/footer
     if (isRegulationPage) {
-      return regulationContent?.title || PAGE_TITLES[getCleanPath] || '';
+      return t.regulation;
     }
+    // Detail pages: use title from API
     if (isRoomsPage && roomTitle) return roomTitle;
     if (isDiningPage && diningTitle) return diningTitle;
     if (isFacilityPage && facilityTitle) return facilityTitle;
     if (isServicePage && serviceTitle) return serviceTitle;
     if (isOffersPage && offerTitle) return offerTitle;
-    return PAGE_TITLES[getCleanPath] || '';
+    
+    // List pages: use translations
+    if (isRoomsPage) return t.rooms;
+    if (isDiningPage) return t.dining;
+    if (isFacilityPage) return t.facilities;
+    if (isServicePage) return t.services;
+    if (isContactPage) return t.contact;
+    if (isBookingPage) return t.booking;
+    if (isGalleryPage) return t.gallery;
+    if (isOffersPage) return t.offers;
+    
+    return '';
   };
   const pageTitle = getPageTitle();
   
@@ -335,8 +344,7 @@ const AppLayout: FC = () => {
         {isPolicyPage && <PolicyContent />}
         {/* Hiển thị ContactContent nếu đang ở trang liên hệ */}
         {isContactPage && <ContactContent content={contactContent} loading={contactLoading} error={contactError} />}
-        {/* Hiển thị BookingForm nếu đang ở trang đặt phòng */}
-        {isBookingPage && <BookingForm />}
+        {/* Trang đặt phòng redirect đến booking_url - xử lý bởi useEffect */}
         {/* Hiển thị GalleryContent nếu đang ở trang thư viện ảnh */}
         {isGalleryPage && <GalleryContent />}
         {/* Hiển thị RegulationContent nếu đang ở trang nội quy */}

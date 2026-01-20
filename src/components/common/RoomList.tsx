@@ -132,18 +132,9 @@ export const RoomList: FC<RoomListProps> = memo(({
     );
   }
 
-  // Empty state
+  // Empty state - để trống khi không có dữ liệu
   if (rooms.length === 0) {
-    return (
-      <div className={`room-list ${className}`} style={wrapperStyle}>
-        <Alert
-          type="info"
-          title="Không có phòng"
-          message="Hiện tại không có phòng nào."
-          style={{ marginBottom: 16 }}
-        />
-      </div>
-    );
+    return null;
   }
 
   return (

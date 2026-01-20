@@ -7,6 +7,7 @@ import { useDiningDetail } from '../../hooks/useDining';
 import { useProperty } from '../../context/PropertyContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { extractCleanPath, getLocalizedPath } from '../../constants/routes';
+import { getMenuTranslations } from '../../constants/translations';
 import type { DiningUIData } from '../../types/dining';
 
 interface DiningViewProps {
@@ -49,7 +50,8 @@ export const DiningView: FC<DiningViewProps> = memo(({
     const cleanPath = '/am-thuc';
     const newPath = getLocalizedPath(cleanPath, locale);
     navigate(newPath, { replace: true });
-    onTitleChange?.('Ẩm Thực');
+    const t = getMenuTranslations(locale);
+    onTitleChange?.(t.dining);
     onVrLinkChange?.(null);
   }, [onTitleChange, onVrLinkChange, navigate, locale]);
 
@@ -59,6 +61,14 @@ export const DiningView: FC<DiningViewProps> = memo(({
       onTitleChange?.(dining.name);
     }
   }, [dining, selectedDiningId, onTitleChange]);
+
+  // Set title to list page title when not viewing detail
+  useEffect(() => {
+    if (!selectedDiningId) {
+      const t = getMenuTranslations(locale);
+      onTitleChange?.(t.dining);
+    }
+  }, [selectedDiningId, locale, onTitleChange]);
 
   // Sync URL code with selectedDiningId
   useEffect(() => {

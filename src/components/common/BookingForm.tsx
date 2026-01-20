@@ -3,6 +3,8 @@ import { memo, useState, useEffect } from 'react';
 import { Input, Select, DatePicker, InputNumber, Button, Form, message, Grid } from 'antd';
 import { useSearchParams } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { getMenuTranslations } from '../../constants/translations';
 import dayjs from 'dayjs';
 
 
@@ -104,6 +106,8 @@ interface BookingFormProps {
 
 export const BookingForm: FC<BookingFormProps> = memo(({ className = '' }) => {
   const { primaryColor } = useTheme();
+  const { locale } = useLanguage();
+  const t = getMenuTranslations(locale);
   const [form] = Form.useForm<BookingFormData>();
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
@@ -125,7 +129,7 @@ export const BookingForm: FC<BookingFormProps> = memo(({ className = '' }) => {
   const handleFormChange = () => {
     const errors = form.getFieldsError().filter(({ errors }) => errors.length > 0);
     if (errors.length > 0) {
-      setValidationStatus('Thiếu thông tin');
+      setValidationStatus(t.missingInfo);
     } else {
       setValidationStatus('');
     }
@@ -139,10 +143,10 @@ export const BookingForm: FC<BookingFormProps> = memo(({ className = '' }) => {
       // Giả lập gửi form
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      message.success('Đặt phòng thành công! Chúng tôi sẽ liên hệ với bạn sớm.');
+      message.success(t.success);
       form.resetFields();
     } catch {
-      message.error('Có lỗi xảy ra. Vui lòng thử lại.');
+      message.error(t.error);
     } finally {
       setLoading(false);
     }
@@ -437,7 +441,7 @@ export const BookingForm: FC<BookingFormProps> = memo(({ className = '' }) => {
                 loading={loading}
                 style={submitButtonStyle}
               >
-                {loading ? 'Đang gửi...' : 'Đặt phòng'}
+                {loading ? t.submitting : t.submit}
               </Button>
             </Form.Item>
           </div>

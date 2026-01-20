@@ -13,8 +13,8 @@ export function transformFacilityForUI(
   facility: FacilityResponse,
   locale: string
 ): FacilityUIData {
-  // Lấy translation theo locale, fallback về 'vi' nếu không có
-  const translation = facility.translations[locale] || facility.translations['vi'] || facility.translations[Object.keys(facility.translations)[0]];
+  // Lấy translation theo locale, không fallback
+  const translation = facility.translations[locale];
   
   // Lấy primary image (is_primary: true)
   const primaryMedia = facility.media.find(m => m.is_primary);
@@ -35,11 +35,11 @@ export function transformFacilityForUI(
     id: facility.id,
     code: facility.code,
     facility_type: facility.facility_type,
-    operating_hours: facility.operating_hours,
+    operatingHours: facility.operating_hours,
     status: facility.status,
     
     // Localized
-    name: translation?.name || 'Unnamed Facility',
+    name: translation?.name || '',
     description: translation?.description || '',
     
     // Media
@@ -79,6 +79,7 @@ export async function getFacilities(
 
 /**
  * Lấy facility với UI data đã transform (sorted by display_order)
+ * Chỉ trả về facilities có translation cho locale hiện tại
  */
 export function getFacilitiesForUI(
   propertyId: number,
@@ -89,8 +90,11 @@ export function getFacilitiesForUI(
     // Transform từng facility thành UI data
     const uiData = facilities.map(facility => transformFacilityForUI(facility, locale));
     
+    // Filter: Chỉ giữ lại items có translation cho locale (name không rỗng)
+    const filtered = uiData.filter(item => item.name.trim() !== '');
+    
     // Sort theo display_order
-    return uiData.sort((a, b) => a.display_order - b.display_order);
+    return filtered.sort((a, b) => a.display_order - b.display_order);
   });
 }
 

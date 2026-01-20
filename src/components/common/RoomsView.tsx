@@ -7,6 +7,7 @@ import { useRoomDetail } from '../../hooks/useRooms';
 import { useProperty } from '../../context/PropertyContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { getLocalizedPath, extractCleanPath } from '../../constants/routes';
+import { getMenuTranslations } from '../../constants/translations';
 import type { RoomUIData } from '../../types/room';
 
 interface RoomsViewProps {
@@ -48,7 +49,8 @@ export const RoomsView: FC<RoomsViewProps> = memo(({
     const cleanPath = '/phong-nghi';
     const newPath = getLocalizedPath(cleanPath, locale);
     navigate(newPath, { replace: true });
-    onTitleChange?.('Phòng Nghỉ');
+    const t = getMenuTranslations(locale);
+    onTitleChange?.(t.rooms);
   }, [onTitleChange, navigate, locale]);
 
   // Update title when room data changes
@@ -57,6 +59,14 @@ export const RoomsView: FC<RoomsViewProps> = memo(({
       onTitleChange?.(room.name);
     }
   }, [room, selectedRoomId, onTitleChange]);
+
+  // Set title to list page title when not viewing detail
+  useEffect(() => {
+    if (!selectedRoomId) {
+      const t = getMenuTranslations(locale);
+      onTitleChange?.(t.rooms);
+    }
+  }, [selectedRoomId, locale, onTitleChange]);
 
   // Sync URL code with selectedRoomId
   useEffect(() => {

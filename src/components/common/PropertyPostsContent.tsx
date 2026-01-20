@@ -3,7 +3,7 @@
  * Hiển thị property posts với locale-aware content
  */
 
-import { Skeleton, Empty } from 'antd';
+import { Skeleton } from 'antd';
 import { usePropertyPosts } from '../../hooks';
 import { usePropertyData } from '../../context/PropertyContext';
 import { useLocale } from '../../context/LanguageContext';
@@ -45,13 +45,9 @@ export const PropertyPostsContent = () => {
     return translation && translation.locale === locale;
   });
 
+  // Empty state - để trống khi không có dữ liệu
   if (filteredPosts.length === 0) {
-    return (
-      <Empty
-        description={locale === 'vi' ? 'Chưa có bài viết' : 'No posts available'}
-        style={{ color: 'rgba(255, 255, 255, 0.6)' }}
-      />
-    );
+    return null;
   }
 
   return (

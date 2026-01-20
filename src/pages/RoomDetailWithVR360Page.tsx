@@ -8,6 +8,8 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useVR360ByRoom } from '../hooks/useVR360';
 import { VR360Modal } from '../components/common';
+import { useLanguage } from '../context/LanguageContext';
+import { getMenuTranslations } from '../constants/translations';
 import type { VR360Link } from '../types/api';
 
 // Mock room data (trong thực tế sẽ fetch từ API)
@@ -29,6 +31,8 @@ const mockRoomData = {
 
 export const RoomDetailPage: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
+  const { locale } = useLanguage();
+  const t = getMenuTranslations(locale);
   const [selectedVRLink, setSelectedVRLink] = useState<VR360Link | null>(null);
   const [activeTab, setActiveTab] = useState<'photos' | 'vr360'>('photos');
 
@@ -252,7 +256,7 @@ export const RoomDetailPage: React.FC = () => {
                     </li>
                     <li className="flex items-center gap-2">
                       <span>👥 Sức chứa:</span>
-                      <span className="font-medium">{room.capacity} người</span>
+                      <span className="font-medium">{room.capacity} {t.people}</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span>🛏️ Loại giường:</span>

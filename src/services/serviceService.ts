@@ -13,8 +13,8 @@ export function transformServiceForUI(
   service: ServiceResponse,
   locale: string
 ): ServiceUIData {
-  // Lấy translation theo locale, fallback về 'vi' nếu không có
-  const translation = service.translations[locale] || service.translations['vi'] || service.translations[Object.keys(service.translations)[0]];
+  // Lấy translation theo locale, không fallback
+  const translation = service.translations[locale];
   
   // Lấy primary image (is_primary: true)
   const primaryMedia = service.media.find(m => m.is_primary);
@@ -35,12 +35,15 @@ export function transformServiceForUI(
     id: service.id,
     code: service.code,
     service_type: service.service_type,
-    pricing_info: service.pricing_info,
     status: service.status,
     
     // Localized
-    name: translation?.name || 'Unnamed Service',
+    name: translation?.name || '',
     description: translation?.description || '',
+    
+    // Service info
+    availability: service.availability,
+    priceInfo: service.price_info,
     
     // Media
     primaryImage,
@@ -79,6 +82,7 @@ export async function getServices(
 
 /**
  * Lấy service với UI data đã transform (sorted by display_order)
+ * Chỉ trả về services có translation cho locale hiện tại
  */
 export function getServicesForUI(
   propertyId: number,
@@ -89,8 +93,11 @@ export function getServicesForUI(
     // Transform từng service thành UI data
     const uiData = services.map(service => transformServiceForUI(service, locale));
     
+    // Filter: Chỉ giữ lại items có translation cho locale (name không rỗng)
+    const filtered = uiData.filter(item => item.name.trim() !== '');
+    
     // Sort theo display_order
-    return uiData.sort((a, b) => a.display_order - b.display_order);
+    return filtered.sort((a, b) => a.display_order - b.display_order);
   });
 }
 

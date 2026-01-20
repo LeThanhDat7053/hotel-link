@@ -108,17 +108,9 @@ export const GalleryContent: FC<GalleryContentProps> = memo(({
     );
   }
 
-  // Empty state
+  // Empty state - để trống khi không có dữ liệu
   if (allImages.length === 0) {
-    return (
-      <div className={`gallery-content ${className}`}>
-        <Alert
-          type="info"
-          message="Chưa có ảnh nào trong thư viện."
-          style={{ background: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.2)' }}
-        />
-      </div>
-    );
+    return null;
   }
 
   return (

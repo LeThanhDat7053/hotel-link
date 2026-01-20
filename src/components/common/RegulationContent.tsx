@@ -77,18 +77,9 @@ export const RegulationContent: FC<RegulationContentProps> = memo(({
     );
   }
 
-  // No content
+  // No content - để trống khi không có dữ liệu
   if (!content) {
-    return (
-      <div className={`regulation-content ${className}`} style={{ padding: '20px' }}>
-        <Alert
-          title="Thông báo"
-          message="Chưa có nội quy khách sạn"
-          type="info"
-          showIcon
-        />
-      </div>
-    );
+    return null;
   }
 
   return (

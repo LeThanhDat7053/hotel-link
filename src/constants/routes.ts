@@ -35,14 +35,52 @@ export const getLocalizedPath = (path: string, lang?: string): string => {
 };
 
 /**
+ * Danh sách tất cả locale codes hỗ trợ từ backend API
+ * Lấy từ GET /api/v1/locales/
+ * Note: Tất cả lowercase ngoại trừ zh-TW
+ */
+export const SUPPORTED_LOCALES = [
+  'ar', 'de', 'en', 'es', 'fr', 'hi', 'id', 'it', 'ja', 'ko',
+  'ms', 'pt', 'ru', 'ta', 'th', 'tl', 'vi', 'yue', 'zh', 'zh-TW'
+] as const;
+
+export type SupportedLocale = typeof SUPPORTED_LOCALES[number];
+
+/**
+ * Helper function để kiểm tra locale code có hợp lệ không
+ * Case-insensitive check
+ */
+export const isValidLocale = (code: string): boolean => {
+  const normalized = code.toLowerCase();
+  return SUPPORTED_LOCALES.some(locale => locale.toLowerCase() === normalized);
+};
+
+/**
+ * Helper function để normalize locale code về đúng format
+ * VD: 'ZH-tw' -> 'zh-TW', 'YUE' -> 'yue'
+ */
+export const normalizeLocale = (code: string): string => {
+  const lower = code.toLowerCase();
+  // Tìm locale khớp (case-insensitive)
+  const found = SUPPORTED_LOCALES.find(locale => locale.toLowerCase() === lower);
+  return found || code;
+};
+
+/**
  * Helper function để extract language code từ pathname
  * @param pathname - Current pathname từ location
- * @returns Language code (en, vi, zh...) hoặc 'vi' nếu không có prefix
+ * @returns Language code (en, vi, zh, ko, zh-TW...) hoặc 'vi' nếu không có prefix
+ * 
+ * Hỗ trợ:
+ * - 2 ký tự: /en/, /vi/, /ko/, /ja/...
+ * - 3 ký tự: /yue/
+ * - Có dấu gạch: /zh-TW/
  */
 export const extractLanguageFromPath = (pathname: string): string => {
-  const langMatch = pathname.match(/^\/([a-z]{2})(\/.+)?$/);
-  if (langMatch) {
-    return langMatch[1]; // Return language code (en, zh...)
+  // Match locale codes: 2-3 chữ cái hoặc có dấu gạch (zh-TW)
+  const langMatch = pathname.match(/^\/([a-zA-Z]{2,3}(?:-[a-zA-Z]{2})?)(?:\/|$)/);
+  if (langMatch && isValidLocale(langMatch[1])) {
+    return normalizeLocale(langMatch[1]); // Return normalized language code
   }
   return 'vi'; // Default to Vietnamese
 };
@@ -53,11 +91,10 @@ export const extractLanguageFromPath = (pathname: string): string => {
  * @returns Clean path without language prefix (ví dụ: /phong-nghi)
  */
 export const extractCleanPath = (pathname: string): string => {
-  // Match only /xx (language prefix) followed by either / or end of string
-  // This prevents matching /phong-nghi as /ph + ong-nghi
-  const langMatch = pathname.match(/^\/([a-z]{2})(?:\/(.*))?$/);
-  if (langMatch && ['en', 'vi', 'zh'].includes(langMatch[1])) {
-    // Only match valid language codes
+  // Match locale codes: 2-3 chữ cái hoặc có dấu gạch (zh-TW)
+  const langMatch = pathname.match(/^\/([a-zA-Z]{2,3}(?:-[a-zA-Z]{2})?)(?:\/(.*))?$/);
+  if (langMatch && isValidLocale(langMatch[1])) {
+    // Valid locale code - extract the clean path
     return langMatch[2] ? `/${langMatch[2]}` : '/';
   }
   return pathname;

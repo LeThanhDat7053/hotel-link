@@ -3,6 +3,8 @@ import { memo, useState, useEffect } from 'react';
 import { Button, Grid, Spin, Alert, Image } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { getMenuTranslations } from '../../constants/translations';
 import { ImageGalleryViewer } from './ImageGalleryViewer';
 import type { ServiceUIData } from '../../types/service';
 
@@ -25,7 +27,8 @@ export const ServiceDetail: FC<ServiceDetailProps> = memo(({
   onVrLinkChange,
   className = '' 
 }) => {
-  const screens = useBreakpoint();  const { primaryColor } = useTheme();  const [galleryOpen, setGalleryOpen] = useState(false);
+  const screens = useBreakpoint();  const { primaryColor } = useTheme();  const { locale } = useLanguage();
+  const t = getMenuTranslations(locale);  const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
 
   const openGallery = (index: number) => {
@@ -145,11 +148,35 @@ export const ServiceDetail: FC<ServiceDetailProps> = memo(({
         style={backButtonStyle}
         className="service-back-btn"
       >
-        Quay lại
+        {t.back}
       </Button>
 
       {/* Nội dung chi tiết */}
       <div className="page-content">
+        {/* Availability - từ API */}
+        {service.availability && (
+          <p style={{ 
+            color: primaryColor, 
+            fontSize: screens.md ? 13 : 11, 
+            marginBottom: 4,
+            fontWeight: 500,
+          }}>
+            {t.availability}: <strong>{service.availability}</strong>
+          </p>
+        )}
+
+        {/* Price Info - từ API */}
+        {service.priceInfo && (
+          <p style={{ 
+            color: primaryColor, 
+            fontSize: screens.md ? 13 : 11, 
+            marginBottom: 12,
+            fontWeight: 500,
+          }}>
+            {t.priceInfo}: <strong>{Number(service.priceInfo).toLocaleString()} VNĐ</strong>
+          </p>
+        )}
+
         {paragraphs.map((paragraph, index) => (
           <p 
             key={index} 
@@ -162,7 +189,7 @@ export const ServiceDetail: FC<ServiceDetailProps> = memo(({
         {/* Gallery images */}
         {galleryImages.length > 0 && (
           <div style={{ marginTop: 16 }}>
-            <h4 style={{ color: primaryColor, fontSize: screens.md ? 15 : 13, marginBottom: 8 }}>Hình ảnh</h4>
+            <h4 style={{ color: primaryColor, fontSize: screens.md ? 15 : 13, marginBottom: 8 }}>{t.images}</h4>
             <div style={galleryContainerStyle}>
               {galleryImages.map((img, index) => (
                 <div

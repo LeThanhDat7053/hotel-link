@@ -238,17 +238,9 @@ export const OfferList: FC<OfferListProps> = memo(({
     );
   }
 
-  // Empty state
+  // Empty state - để trống khi không có dữ liệu
   if (offers.length === 0) {
-    return (
-      <div className={`offer-list ${className}`}>
-        <Alert
-          type="info"
-          message={t.empty}
-          style={{ background: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.2)' }}
-        />
-      </div>
-    );
+    return null;
   }
 
   return (

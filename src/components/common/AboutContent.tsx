@@ -82,17 +82,9 @@ export const AboutContent: FC<AboutContentProps> = memo(({
     );
   }
 
-  // No content available
+  // No content available - để trống khi không có dữ liệu
   if (!content) {
-    return (
-      <div className={`about-content ${className}`} style={containerStyle}>
-        <Alert
-          type="info"
-          title="Chưa có nội dung giới thiệu"
-          description="Nội dung giới thiệu chưa được cập nhật."
-        />
-      </div>
-    );
+    return null;
   }
 
   // NOTE: Tạm bỏ check isDisplaying để dev có thể thấy content

@@ -556,6 +556,7 @@ export interface VRHotelIntroductionResponse {
 // ============= VR HOTEL SETTINGS =============
 export interface VrHotelSettingsResponse {
   primary_color: string;
+  booking_url: string;
   logo_media_id: number | null;
   favicon_media_id: number | null;
   seo: Record<string, {
