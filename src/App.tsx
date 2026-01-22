@@ -71,12 +71,6 @@ const AppLayout: FC = () => {
   // Fetch contact data cho trang liên hệ
   const { content: contactContent, vr360Link: contactVr360Link, loading: contactLoading, error: contactError } = useContact(propertyId || 0, locale);
   
-  // Auto expand menu when location changes
-  useEffect(() => {
-    // Khi chuyển trang, tự động mở header và nội dung
-    setIsMenuExpanded(true);
-  }, [location.pathname]);
-  
   // Check if current page is Rooms page, Dining page, Facility page, Service page, Policy page, Contact page or Booking page
   const isHomePage = getCleanPath === '/';
   const isAboutPage = getCleanPath === '/gioi-thieu';
@@ -210,11 +204,7 @@ const AppLayout: FC = () => {
   }
   
   // Debug logs (commented out to reduce spam)
-  // console.log('[App] Current page:', location.pathname);
-  // console.log('[App] isRoomsPage:', isRoomsPage);
-  // console.log('[App] vrHotelSettings:', vrHotelSettings);
-  // console.log('[App] rooms vr360_link:', vrHotelSettings?.pages?.rooms?.vr360_link);
-  // console.log('[App] Final vr360Url:', vr360Url);
+
   
   // Xác định loại media (image hay vr360)
   const mediaType = useMemo(() => getMediaType(vr360Url || ''), [vr360Url]);

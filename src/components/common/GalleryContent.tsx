@@ -32,7 +32,6 @@ export const GalleryContent: FC<GalleryContentProps> = memo(({
     if (media.length === 0) return [];
     
     const urls = media.map(m => mediaService.getMediaUrl(m.id));
-    console.log('[GalleryContent] Generated URLs:', urls);
     return urls;
   }, [media]);
 

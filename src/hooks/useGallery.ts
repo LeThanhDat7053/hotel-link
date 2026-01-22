@@ -43,12 +43,8 @@ export function useGallery({
       // Gọi API với source='vr_hotel' - tenant code tự động từ api interceptor
       const data = await mediaService.getVRHotelMedia(params);
       
-      console.log('[useGallery] API Response:', data);
-      
       // Filter chỉ lấy images (kind='image')
       const images = data.filter(item => item.kind === 'image');
-      
-      console.log('[useGallery] Filtered images:', images.length, images);
       
       setMedia(images);
     } catch (err) {

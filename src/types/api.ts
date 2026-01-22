@@ -568,22 +568,27 @@ export interface VrHotelSettingsResponse {
     rooms: {
       vr_title: string;
       vr360_link: string;
+      is_displaying: boolean;
     };
     dining: {
       vr_title: string;
       vr360_link: string;
+      is_displaying: boolean;
     };
     offers: {
       vr_title: string;
       vr360_link: string;
+      is_displaying: boolean;
     };
     services: {
       vr_title: string;
       vr360_link: string;
+      is_displaying: boolean;
     };
     facilities: {
       vr_title: string;
       vr360_link: string;
+      is_displaying: boolean;
     };
   };
 }

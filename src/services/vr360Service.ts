@@ -60,7 +60,6 @@ interface VrHotelSettingsParams {
  * @returns VrHotelSettingsResponse
  */
 const getVrHotelSettings = async (params: VrHotelSettingsParams): Promise<VrHotelSettingsResponse> => {
-  console.log('[getVrHotelSettings] Calling API with propertyId:', params.propertyId);
   const response = await api.get('/vr-hotel/settings', {
     headers: {
       'x-property-id': params.propertyId.toString(),

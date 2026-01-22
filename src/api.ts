@@ -52,7 +52,6 @@ const loginAndGetToken = async (): Promise<string> => {
     );
 
     const newToken = response.data.access_token;
-    // console.log(`[AUTH SUCCESS] Token mới: ${newToken.substring(0, 10)}...`); // ĐÃ TẮT LOG NÀY
     return newToken;
   } catch (error) {
     console.error("[AUTH FAILED] Không thể đăng nhập và lấy token:", error);
@@ -111,9 +110,7 @@ api.interceptors.request.use(async (config) => {
   // Chặn và chờ lấy token
   const token = await ensureToken();
   config.headers.Authorization = `Bearer ${token}`;
-  // console.log( // ĐÃ TẮT LOG NÀY
-  //   `[API REQUEST] ${config.url} với token: ${token.substring(0, 10)}...`
-  // );
+
 
   return config;
 });

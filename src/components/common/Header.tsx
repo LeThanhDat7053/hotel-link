@@ -1,5 +1,5 @@
 import type { FC, CSSProperties } from 'react';
-import { memo, useState, useMemo } from 'react';
+import { memo, useState, useMemo, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   DownOutlined,
@@ -17,6 +17,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { getMenuTranslations } from '../../constants/translations';
 import { useContact } from '../../hooks/useContact';
 import { usePropertyContext } from '../../context/PropertyContext';
+import { useVrHotelSettings } from '../../hooks/useVR360';
 import { getLocalizedPath, extractCleanPath } from '../../constants/routes';
 
 const { useBreakpoint } = Grid;
@@ -42,20 +43,60 @@ export const Header: FC<HeaderProps> = memo(({ isMenuExpanded = false, onMenuTog
   const screens = useBreakpoint();
   const { property } = usePropertyContext();
   const { content: contactData } = useContact(property?.id || 0, locale);
+  const { settings: vrHotelSettings, loading: vrSettingsLoading } = useVrHotelSettings(property?.id || null);
+
+  // Auto-open menu sau khi settings load xong + delay để smooth
+  useEffect(() => {
+    if (!vrSettingsLoading && vrHotelSettings) {
+      // Delay 500ms sau khi settings load xong rồi mở menu
+      const timer = setTimeout(() => {
+        onMenuToggle?.(true);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [vrSettingsLoading, vrHotelSettings, onMenuToggle]);
 
   // Lấy translations theo locale hiện tại
   const t = useMemo(() => getMenuTranslations(locale), [locale]);
 
+  // Mapping giữa menu path và API page key
+  const pageKeyMap: Record<string, string> = {
+    '/phong-nghi': 'rooms',
+    '/am-thuc': 'dining',
+    '/tien-ich': 'facilities',
+    '/dich-vu': 'services',
+    '/uu-dai': 'offers',
+  };
+
   // Menu items với translations động theo locale
-  const menuItems: MenuItem[] = useMemo(() => [
-    { path: '/gioi-thieu', label: t.about },
-    { path: '/phong-nghi', label: t.rooms },
-    { path: '/am-thuc', label: t.dining },
-    { path: '/tien-ich', label: t.facilities },
-    { path: '/dich-vu', label: t.services },
-    { path: '/chinh-sach', label: t.policy },
-    { path: '/lien-he', label: t.contact },
-  ], [t]);
+  const menuItems: MenuItem[] = useMemo(() => {
+    const allItems = [
+      { path: '/gioi-thieu', label: t.about },
+      { path: '/phong-nghi', label: t.rooms },
+      { path: '/am-thuc', label: t.dining },
+      { path: '/tien-ich', label: t.facilities },
+      { path: '/dich-vu', label: t.services },
+      { path: '/chinh-sach', label: t.policy },
+      { path: '/lien-he', label: t.contact },
+    ];
+
+    // Filter menu items dựa trên is_displaying từ VR Hotel Settings
+    if (!vrHotelSettings?.pages) {
+      return allItems;
+    }
+
+    return allItems.filter((item) => {
+      const pageKey = pageKeyMap[item.path];
+      // Nếu không có trong map (ví dụ: gioi-thieu, chinh-sach, lien-he) thì hiển thị
+      if (!pageKey) {
+        return true;
+      }
+      // Kiểm tra is_displaying từ API
+      const pageSettings = vrHotelSettings.pages[pageKey as keyof typeof vrHotelSettings.pages];
+      return pageSettings?.is_displaying !== false;
+    });
+  }, [t, vrHotelSettings]);
 
   // Footer links với translations động theo locale (có thể dùng sau)
   // const footerLinks = useMemo(() => [

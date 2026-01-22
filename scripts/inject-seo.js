@@ -1,19 +1,36 @@
 /**
  * Build Script: Fetch API và inject SEO meta tags vào index.html
  * Chạy sau khi build: node scripts/inject-seo.js
+ * 
+ * Script này:
+ * 1. Đọc config từ .env
+ * 2. Fetch SEO data từ API
+ * 3. Inject vào dist/index.html (static HTML)
+ * 4. Crawlers (Google, Facebook) thấy ngay meta tags mà không cần chờ JS
  */
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { config } from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Config
-const API_BASE_URL = 'https://travel.link360.vn/api/v1';
-const TENANT_CODE = 'fusion';
-const PROPERTY_ID = '10';
+// Load env variables
+config();
+
+// Config from .env
+const API_BASE_URL = process.env.VITE_API_BASE_URL || 'https://travel.link360.vn/api/v1';
+const TENANT_CODE = process.env.VITE_TENANT_CODE || 'fusion';
+const PROPERTY_ID = process.env.VITE_PROPERTY_ID || '10';
+const SITE_BASE_URL = process.env.VITE_SITE_BASE_URL || 'https://fusionsuites.vn';
+
+console.log('📋 Config:');
+console.log('  - API:', API_BASE_URL);
+console.log('  - Tenant:', TENANT_CODE);
+console.log('  - Property ID:', PROPERTY_ID);
+console.log('  - Site URL:', SITE_BASE_URL);
 
 async function fetchSEOData() {
   console.log('🔄 Fetching SEO data from API...');
@@ -39,30 +56,42 @@ async function fetchSEOData() {
     keywords: data.seo?.vi?.meta_keywords || '',
     logoUrl: `${API_BASE_URL}/media/${data.logo_media_id}/view`,
     faviconUrl: `${API_BASE_URL}/media/${data.favicon_media_id}/view`,
+    siteUrl: SITE_BASE_URL,
   };
 }
 
 function generateMetaTags(seo) {
   return `
-    <!-- SEO Meta Tags - Generated at build time -->
+    <!-- SEO Meta Tags - Generated at build time from API -->
     <title>${seo.title}</title>
     <meta name="description" content="${seo.description}" />
     <meta name="keywords" content="${seo.keywords}" />
     
+    <!-- Canonical URL (homepage - React Router sẽ update cho các trang khác) -->
+    <link rel="canonical" href="${seo.siteUrl}" />
+    
     <!-- Open Graph (Facebook, Zalo) -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="${seo.siteUrl}" />
+    <meta property="og:site_name" content="${seo.title}" />
     <meta property="og:title" content="${seo.title}" />
     <meta property="og:description" content="${seo.description}" />
     <meta property="og:image" content="${seo.logoUrl}" />
     <meta property="og:image:secure_url" content="${seo.logoUrl}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="${seo.title}" />
+    <meta property="og:locale" content="vi_VN" />
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${seo.title}" />
     <meta name="twitter:description" content="${seo.description}" />
     <meta name="twitter:image" content="${seo.logoUrl}" />
+    <meta name="twitter:image:alt" content="${seo.title}" />
+    
+    <!-- Zalo (uses OG) -->
+    <meta property="zalo:image" content="${seo.logoUrl}" />
     
     <!-- Favicon -->
     <link rel="icon" href="${seo.faviconUrl}" />
